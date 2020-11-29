@@ -1,19 +1,12 @@
 #include <math.h>
 
-//Variable definitions
-/*
-int c_nul_x = 0;
-int c_nul_y = 80;
-int c_nul_z = -50;
-*/
-
 void moveLegZTo(double z, int legNum){
   moveLegToPos(currentX[legNum], currentY[legNum], z, legNum);
 }
 
 void robotStand(){
   for(int i=0;i<6;i++){
-    moveLegToPos(0,80,-50,i);
+    moveLegToPos(c_nul_x,c_nul_y,c_nul_z,i);
   }
 }
 
@@ -23,88 +16,120 @@ void robotToZ(double z){
   }
 }
 
-void moveBackward(double strideLength){
-  //Spustanje noga 1,2,5
-  moveLegToPos(strideLength, 80, -50, 1);
-  moveLegToPos(-strideLength, 80, -50, 2);
-  moveLegToPos(strideLength, 80, -50, 5);
-  delay(50);
-  //Dizanje noga 0,3,4
-  moveLegToPos(strideLength, 80, -30, 0);
-  moveLegToPos(-strideLength, 80, -30, 3);
-  moveLegToPos(strideLength, 80, -30, 4);
-  delay(200);
-  moveLegToPos(-strideLength, 80, -50, 1);
-  moveLegToPos(strideLength, 80, -50, 2);
-  moveLegToPos(-strideLength, 80, -50, 5);
-  
-  moveLegToPos(-strideLength, 80, -30, 0);
-  moveLegToPos(strideLength, 80, -30, 3);
-  moveLegToPos(-strideLength, 80, -30, 4);
-  delay(200);
-  //Spustanje noga 0,3,4
-  moveLegToPos(-strideLength, 80, -50, 0);
-  moveLegToPos(strideLength, 80, -50, 3);
-  moveLegToPos(-strideLength, 80, -50, 4);
-  delay(50);
-  //Dizanje noga 1,2,5
-  moveLegToPos(-strideLength, 80, -30, 1);
-  moveLegToPos(strideLength, 80, -30, 2);
-  moveLegToPos(-strideLength, 80, -30, 5);
-  delay(200);
-  moveLegToPos(strideLength, 80, -50, 0);
-  moveLegToPos(-strideLength, 80, -50, 3);
-  moveLegToPos(strideLength, 80, -50, 4);
-
-  moveLegToPos(strideLength, 80, -30, 1);
-  moveLegToPos(-strideLength, 80, -30, 2);
-  moveLegToPos(strideLength, 80, -30, 5);
-  delay(200);
-}
-
-void moveForward(double strideLength){
-  //Spustanje noga 1,2,5
-  moveLegToPos(-strideLength, 80, -50, 1);
-  moveLegToPos(strideLength, 80, -50, 2);
-  moveLegToPos(-strideLength, 80, -50, 5);
-  delay(50);
-  //Dizanje noga 0,3,4
-  moveLegToPos(-strideLength, 80, -30, 0);
-  moveLegToPos(strideLength, 80, -30, 3);
-  moveLegToPos(-strideLength, 80, -30, 4);
-  delay(200);
-  moveLegToPos(strideLength, 80, -50, 1);
-  moveLegToPos(-strideLength, 80, -50, 2);
-  moveLegToPos(strideLength, 80, -50, 5);
-  
-  moveLegToPos(strideLength, 80, -30, 0);
-  moveLegToPos(-strideLength, 80, -30, 3);
-  moveLegToPos(strideLength, 80, -30, 4);
-  delay(200);
-  //Spustanje noga 0,3,4
-  moveLegToPos(strideLength, 80, -50, 0);
-  moveLegToPos(-strideLength, 80, -50, 3);
-  moveLegToPos(strideLength, 80, -50, 4);
-  delay(50);
-  //Dizanje noga 1,2,5
-  moveLegToPos(strideLength, 80, -30, 1);
-  moveLegToPos(-strideLength, 80, -30, 2);
-  moveLegToPos(strideLength, 80, -30, 5);
-  delay(200);
-  moveLegToPos(-strideLength, 80, -50, 0);
-  moveLegToPos(strideLength, 80, -50, 3);
-  moveLegToPos(-strideLength, 80, -50, 4);
-
-  moveLegToPos(-strideLength, 80, -30, 1);
-  moveLegToPos(strideLength, 80, -30, 2);
-  moveLegToPos(-strideLength, 80, -30, 5);
-  delay(200);
-}
-
 struct Point{
   double x;
   double y;
 };
+
+void angleBase(double n_angle, double n_mid_height){
+  //distance - 120mm
+  double n_radian = getRadFromAngle(n_angle);
+  int d_motorToMotor = 120;
+  double z = sin(n_radian) * d_motorToMotor;
+  Serial.println(z);
+  moveLegZTo(n_mid_height-z,0);
+  moveLegZTo(n_mid_height-z,1);
+  moveLegZTo(n_mid_height,2);
+  moveLegZTo(n_mid_height,3);
+  moveLegZTo(n_mid_height+z,4);
+  moveLegZTo(n_mid_height+z,5);
+}
+
+void turnRobot(String side, double n_stride, int n_delay){
+  //side - left or right
+  if(side == "left"){
+    struct Point start_point;
+    start_point = getLineStartPoint(0, n_stride);
+    double x1 = c_nul_x + start_point.x;
+    double y1 = c_nul_y + start_point.y;
+    double x2 = c_nul_x - start_point.x;
+    double y2 = c_nul_y - start_point.y;
+    
+    x1 = -x1;
+    x2 = -x2;
+    moveLegToPos(x1,y1,-50,1);
+    moveLegToPos(x1,y1,-50,2);
+    moveLegToPos(x1,y1,-50,5);
+    delay(round(n_delay / 4));
+    moveLegToPos(x1,y1,-30,0);
+    moveLegToPos(x1,y1,-30,3);
+    moveLegToPos(x1,y1,-30,4);
+    delay(round(n_delay * (3/4) ));
+
+    moveLegToPos(x2,y2,-50,1);
+    moveLegToPos(x2,y2,-50,2);
+    moveLegToPos(x2,y2,-50,5);
+    delay(round(n_delay / 4));
+    moveLegToPos(x2,y2,-30,0);
+    moveLegToPos(x2,y2,-30,3);
+    moveLegToPos(x2,y2,-30,4);
+    delay(round(n_delay * (3/4) ));
+  
+    moveLegToPos(x2,y2,-50,0);
+    moveLegToPos(x2,y2,-50,3);
+    moveLegToPos(x2,y2,-50,4);
+    delay(round(n_delay / 4));
+    moveLegToPos(x2,y2,-30,1);
+    moveLegToPos(x2,y2,-30,2);
+    moveLegToPos(x2,y2,-30,5);
+    delay(round(n_delay * (3/4) ));
+
+    moveLegToPos(x1,y1,-50,0);
+    moveLegToPos(x1,y1,-50,3);
+    moveLegToPos(x1,y1,-50,4);
+    delay(round(n_delay / 4));
+    moveLegToPos(x1,y1,-30,1);
+    moveLegToPos(x1,y1,-30,2);
+    moveLegToPos(x1,y1,-30,5);
+    delay(round(n_delay * (3/4) ));
+  } else{
+    struct Point start_point;
+    start_point = getLineStartPoint(180, n_stride);
+    double x1 = c_nul_x + start_point.x;
+    double y1 = c_nul_y + start_point.y;
+    double x2 = c_nul_x - start_point.x;
+    double y2 = c_nul_y - start_point.y;
+    
+    x1 = -x1;
+    x2 = -x2;
+    moveLegToPos(x1,y1,-50,1);
+    moveLegToPos(x1,y1,-50,2);
+    moveLegToPos(x1,y1,-50,5);
+    delay(round(n_delay / 4));
+    moveLegToPos(x1,y1,-30,0);
+    moveLegToPos(x1,y1,-30,3);
+    moveLegToPos(x1,y1,-30,4);
+    delay(round(n_delay * (3/4) ));
+
+    moveLegToPos(x2,y2,-50,1);
+    moveLegToPos(x2,y2,-50,2);
+    moveLegToPos(x2,y2,-50,5);
+    delay(round(n_delay / 4));
+    moveLegToPos(x2,y2,-30,0);
+    moveLegToPos(x2,y2,-30,3);
+    moveLegToPos(x2,y2,-30,4);
+    delay(round(n_delay * (3/4) ));
+  
+    moveLegToPos(x2,y2,-50,0);
+    moveLegToPos(x2,y2,-50,3);
+    moveLegToPos(x2,y2,-50,4);
+    delay(round(n_delay / 4));
+    moveLegToPos(x2,y2,-30,1);
+    moveLegToPos(x2,y2,-30,2);
+    moveLegToPos(x2,y2,-30,5);
+    delay(round(n_delay * (3/4) ));
+
+    moveLegToPos(x1,y1,-50,0);
+    moveLegToPos(x1,y1,-50,3);
+    moveLegToPos(x1,y1,-50,4);
+    delay(round(n_delay / 4));
+    moveLegToPos(x1,y1,-30,1);
+    moveLegToPos(x1,y1,-30,2);
+    moveLegToPos(x1,y1,-30,5);
+    delay(round(n_delay * (3/4) ));
+  }
+  
+}
 
 void moveAtAngle(String move_object, int n_object, double n_angle, double n_stride, int n_delay){
   struct Point start_point;
@@ -113,7 +138,7 @@ void moveAtAngle(String move_object, int n_object, double n_angle, double n_stri
   double y1 = c_nul_y + start_point.y;
   double x2 = c_nul_x - start_point.x;
   double y2 = c_nul_y - start_point.y;
-
+/*
   Serial.print(x1);
   Serial.print(" - ");
   Serial.print(y1);
@@ -122,7 +147,7 @@ void moveAtAngle(String move_object, int n_object, double n_angle, double n_stri
   Serial.print(" - ");
   Serial.print(y2);
   Serial.print("\n");
-
+*/
   if(move_object == "leg"){
     moveLegToPos(x1,y1,currentZ[n_object],n_object);
     delay(n_delay);

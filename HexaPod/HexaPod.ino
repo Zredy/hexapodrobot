@@ -7,7 +7,7 @@ double currentY[6];
 double currentZ[6];
 
 int c_nul_x = 0;
-int c_nul_y = 80;
+int c_nul_y = 40;
 int c_nul_z = -50;
 
 int middle = 900;
@@ -38,6 +38,8 @@ void setup(){
   Serial.println("Starting serial link.");
  
   Serial.println("Servos initialized!");
+
+  robotStand();
 }
 
 void loop(){
@@ -63,7 +65,12 @@ void loop(){
  * n_delay - delay between individual motions, lower delay means faster walking
  */
 
-  moveAtAngle("robot", 0, -90, 40, 1000);
+//  analogWrite(servoPins[1], min_interval);
+  moveLegToPos(0, 60 , -80 , 0);
+ 
+//  turnRobot("right", 40, 1000);
+
+ // moveAtAngle("robot", 0, -90, 40, 1000);
  /* moveAtAngle("robot", 0, 180, 40, 400);
   delay(500);*/
   
