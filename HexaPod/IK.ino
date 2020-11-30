@@ -27,13 +27,11 @@ void moveLegToPos(double x, double y, double z, int n_leg){
   double midToTip = 0.0;
   double radTemp1 = 0.0;
   double radTemp2 = 0.0;
+  
   calcBottomAngle(x,y);
   double distToTip = sqrt(pow(x,2) + pow(y,2));
-  Serial.println(distToTip);
   double distToTipSub = distToTip-lenBottom;
-  Serial.println(distToTipSub);
-//  Serial.println((abs(z) + 60 ) * (abs(z) / z));
-
+  
   if(z>=0){
     if(z+60 > (lenTop+lenMiddle)){
       z = 80;
@@ -47,44 +45,45 @@ void moveLegToPos(double x, double y, double z, int n_leg){
     midToTip = sqrt(pow( (distToTipSub) , 2 ) + pow( ( z - 60 ) , 2 ));
   }
   
-  
-  Serial.println(midToTip);
   if(sqrt(pow(lenTop,2) + pow(lenMiddle,2)) == midToTip){
     radTop = PI/4;
-  //  radTemp1 = atan( lenTop/lenMiddle );
   } else {
     radTop = acos((pow(lenMiddle,2) + pow(lenTop,2) - pow(midToTip,2)) / (2*lenMiddle*lenTop));
-   // radTemp1 = asin( (lenTop * sin(radTop)) / midToTip);
   }
 
   radTemp1 = acos(( pow(lenMiddle,2) + pow(midToTip,2) - pow(lenTop,2) ) / (2*lenMiddle*midToTip));
-//  Serial.println(sqrt(pow(lenTop,2) + pow(lenMiddle,2)));
-//  Serial.println(radTop);
-  
+
   radTemp2 = atan( distToTipSub / (abs(z) + 60 ));
   radMiddle = PI-radTemp1-radTemp2;
   radTop = PI - radTop; 
   radBase = radBase + (PI/2);
-  
-  Serial.println(getAngleFromRad(radTemp1));
-  Serial.println(getAngleFromRad(radTemp2));
 
-  Serial.print("Angle bottom: ");
-  Serial.print(getAngleFromRad(radBase));
-  Serial.print(" Angle middle: ");
-  Serial.print(getAngleFromRad(radMiddle));
-  Serial.print(" Angle top: ");
-  Serial.print(getAngleFromRad(radTop));
-  Serial.print("\n");
- 
   analogWrite(servoPins[n_leg*3], radToSteps(radBase, n_leg*3));
   analogWrite(servoPins[n_leg*3+1], radToSteps(radMiddle, n_leg*3+1));
   analogWrite(servoPins[n_leg*3+2], radToSteps(radTop, n_leg*3+2));
+
+/*  DEBUG SECTION
+ *  Serial.println(distToTip);
+ *  Serial.println(distToTipSub);
+ *  Serial.println((abs(z) + 60 ) * (abs(z) / z));
+ *  Serial.println(midToTip);
+ *  Serial.println(sqrt(pow(lenTop,2) + pow(lenMiddle,2)));
+ *  Serial.println(radTop);
+ *  Serial.println(getAngleFromRad(radTemp1));
+ *  Serial.println(getAngleFromRad(radTemp2));
+ *  Serial.print("Angle bottom: ");
+ *  Serial.print(getAngleFromRad(radBase));
+ *  Serial.print(" Angle middle: ");
+ *  Serial.print(getAngleFromRad(radMiddle));
+ *  Serial.print(" Angle top: ");
+ *  Serial.print(getAngleFromRad(radTop));
+ *  Serial.print("\n");
+ */
+  
 }
 
 void calcBottomAngle(double x, double y){
   radBase = atan(x/y);
-//  Serial.println(radBase);
 }
 
 int radToSteps(double radian, int servo_index){

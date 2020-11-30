@@ -1,14 +1,29 @@
 #include <math.h>
 
+/* moveLegZTo(double z, int legNum)
+ * Raises the specified leg to a height
+ * z - specifies height of the leg
+ * legNum - number of the leg you want to move(0-5)
+ */
+
 void moveLegZTo(double z, int legNum){
   moveLegToPos(currentX[legNum], currentY[legNum], z, legNum);
 }
+
+/* robotStand()
+ * Make the robot stand to predetermined height
+ */
 
 void robotStand(){
   for(int i=0;i<6;i++){
     moveLegToPos(c_nul_x,c_nul_y,c_nul_z,i);
   }
 }
+
+/* robotToZ(double z)
+ * Raise the whole robot to set z level
+ * z - specifies z level
+ */
 
 void robotToZ(double z){
   for(int i=0;i<6;i++){
@@ -21,19 +36,56 @@ struct Point{
   double y;
 };
 
-void angleBase(double n_angle, double n_mid_height){
-  //distance - 120mm
-  double n_radian = getRadFromAngle(n_angle);
-  int d_motorToMotor = 120;
-  double z = sin(n_radian) * d_motorToMotor;
-  Serial.println(z);
-  moveLegZTo(n_mid_height-z,0);
-  moveLegZTo(n_mid_height-z,1);
-  moveLegZTo(n_mid_height,2);
-  moveLegZTo(n_mid_height,3);
-  moveLegZTo(n_mid_height+z,4);
-  moveLegZTo(n_mid_height+z,5);
+void angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, double n_time){
+  if(currentAnglePitch > n_pitch){
+    for(int i=currentAnglePitch; i > n_pitch; i-= ((currentAnglePitch - n_pitch) / 10) ){
+      angleBase(i, 0, n_mid_height);
+      delay(n_time / 10);
+    }
+  } else {
+    for(int i=currentAnglePitch; i < n_pitch; i+= ((n_pitch - currentAnglePitch) / 10) ){
+      angleBase(i, 0, n_mid_height);
+      delay(n_time / 10);
+    }
+  }
 }
+
+/*  angleBase(double n_angle, double n_mid_height)
+ *  Set the angle of the base that you want the robot to take.
+ *  n_angle - specifies the angle you want the base to go at
+ *  n_mid_height - specifies the height of the robot in the center
+ */
+
+void angleBase(double n_pitch, double n_roll, double n_mid_height){
+  currentAnglePitch = n_pitch;  
+  currentAngleRoll = n_roll;
+
+  double n_pitch_rad = getRadFromAngle(n_pitch);
+  double n_roll_rad = getRadFromAngle(n_roll);
+  int d_pitch = 120;
+  int d_roll_mid = 55;
+  int d_roll_out = 42;
+  double z_pitch = sin(n_pitch_rad) * d_pitch;
+  double z_roll_mid = sin(n_roll_rad) * d_roll_mid;
+  double z_roll_out = sin(n_roll_rad) * d_roll_out;
+  
+
+  
+//  Serial.println(z);
+  moveLegZTo(n_mid_height - z_pitch - z_roll_out,0);
+  moveLegZTo(n_mid_height - z_pitch + z_roll_out,1);
+  moveLegZTo(n_mid_height - z_roll_mid ,2);
+  moveLegZTo(n_mid_height + z_roll_mid ,3);
+  moveLegZTo(n_mid_height + z_pitch - z_roll_out ,4);
+  moveLegZTo(n_mid_height + z_pitch + z_roll_out,5);
+}
+
+/* turnRobot(String side, double n_stride, int n_delay)
+ * Turn the robot(not really precise nor well made, semi-works);
+ * side - define if you want the robot to turn to the right or to the left
+ * n_stride - define the size of the step the robot takes, dictates speed
+ * n_delay - the delay between individual movements of the robot, dictates speed
+ */
 
 void turnRobot(String side, double n_stride, int n_delay){
   //side - left or right
@@ -131,6 +183,14 @@ void turnRobot(String side, double n_stride, int n_delay){
   
 }
 
+/* moveAtAngle(String move_object, int n_object, double n_angle, double n_stride, int n_delay)
+ * Move a leg, leg set or the robot at an desired angle.
+ * move_object - leg, leg_set, robot
+ * n_object - if move_object set to leg, defines leg number; if move_object set to leg_set defines leg set(1 or 2); no use in robot case, set to 0
+ * n_angle - angle at which to move the robot. 0 degrees is forward, 180 is backward
+ * n_stride - length of each step on each leg, lower stride means slower movement
+ * n_delay - delay between individual motions, lower delay means faster walking
+ */
 void moveAtAngle(String move_object, int n_object, double n_angle, double n_stride, int n_delay){
   struct Point start_point;
   start_point = getLineStartPoint(n_angle, n_stride);
@@ -138,16 +198,7 @@ void moveAtAngle(String move_object, int n_object, double n_angle, double n_stri
   double y1 = c_nul_y + start_point.y;
   double x2 = c_nul_x - start_point.x;
   double y2 = c_nul_y - start_point.y;
-/*
-  Serial.print(x1);
-  Serial.print(" - ");
-  Serial.print(y1);
-  Serial.print(" - ");
-  Serial.print(x2);
-  Serial.print(" - ");
-  Serial.print(y2);
-  Serial.print("\n");
-*/
+
   if(move_object == "leg"){
     moveLegToPos(x1,y1,currentZ[n_object],n_object);
     delay(n_delay);
@@ -182,7 +233,7 @@ void moveAtAngle(String move_object, int n_object, double n_angle, double n_stri
       moveLegToPos(-x1,y1,-50,1);
       moveLegToPos(x1,y1,-50,2);
       moveLegToPos(-x1,y1,-50,5);
-      delay(round(n_delay / 4));
+      delay(round(n_delay / 2));
       moveLegToPos(-x1,y1,-30,0);
       moveLegToPos(x1,y1,-30,3);
       moveLegToPos(-x1,y1,-30,4);
@@ -200,7 +251,7 @@ void moveAtAngle(String move_object, int n_object, double n_angle, double n_stri
       moveLegToPos(-x2,y2,-50,0);
       moveLegToPos(x2,y2,-50,3);
       moveLegToPos(-x2,y2,-50,4);
-      delay(round(n_delay / 4));
+      delay(round(n_delay / 2));
       moveLegToPos(-x2,y2,-30,1);
       moveLegToPos(x2,y2,-30,2);
       moveLegToPos(-x2,y2,-30,5);

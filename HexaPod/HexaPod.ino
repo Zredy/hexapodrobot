@@ -5,12 +5,14 @@ int servoPins[numServo] = {2,3,4,5,6,7,8,9,10,14,29,30,20,21,22,35,36,37};
 double currentX[6];
 double currentY[6];
 double currentZ[6];
+double currentAnglePitch = 0.0;
+double currentAngleRoll = 0.0;
 
 int c_nul_x = 0;
-int c_nul_y = 40;
+int c_nul_y = 50;
 int c_nul_z = -50;
 
-int middle = 900;
+int middle = 5;
 int currentServoNum;
 
 int min_interval = 595;
@@ -40,6 +42,11 @@ void setup(){
   Serial.println("Servos initialized!");
 
   robotStand();
+
+  for(int i=0;i<10;i++){
+    angleBase(i,0,-70);
+    delay(50);
+  }
 }
 
 void loop(){
@@ -64,14 +71,31 @@ void loop(){
  * n_stride - length of each step on each leg, lower stride means slower movement
  * n_delay - delay between individual motions, lower delay means faster walking
  */
-
-//  analogWrite(servoPins[1], min_interval);
-  moveLegToPos(0, 60 , -80 , 0);
- 
+  for(double i=0; i<10;i+=0.5){
+    angleBase(currentAnglePitch, i, -70);
+    delay(middle);
+  }
+  for(double i=10; i>-10;i-=0.5){
+    angleBase(i, currentAngleRoll, -70);
+    delay(middle);
+  }
+  for(double i=10; i>-10;i-=0.5){
+    angleBase(currentAnglePitch, i , -70);
+    delay(middle);
+  }
+  for(double i=-10;i<10;i+=0.5){
+    angleBase(i, currentAngleRoll, -70);
+    delay(middle);
+  }
+  for(double i=-10;i<0;i+=0.5){
+    angleBase(currentAnglePitch, i , -70);
+    delay(middle);
+  }
+  
 //  turnRobot("right", 40, 1000);
 
- // moveAtAngle("robot", 0, -90, 40, 1000);
  /* moveAtAngle("robot", 0, 180, 40, 400);
-  delay(500);*/
+  delay(500);
+  */
   
 }
