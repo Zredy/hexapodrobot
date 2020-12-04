@@ -1,5 +1,8 @@
 #include <math.h>
 
+double previous_pitch = 0.0;
+double previous_roll = 0.0;
+
 /* moveLegZTo(double z, int legNum)
  * Raises the specified leg to a height
  * z - specifies height of the leg
@@ -36,18 +39,67 @@ struct Point{
   double y;
 };
 
-void angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, double n_time){
-  if(currentAnglePitch > n_pitch){
-    for(int i=currentAnglePitch; i > n_pitch; i-= ((currentAnglePitch - n_pitch) / 10) ){
-      angleBase(i, 0, n_mid_height);
-      delay(n_time / 10);
+void gesture_wave(){
+  double tempX[6];
+  double tempY[6];
+  double tempZ[6];
+  for(int i=0;i<6;i++){
+    tempX[i] = currentX[i];
+    tempY[i] = currentY[i];
+    tempZ[i] = currentZ[i];
+  }
+  angleBaseOverTime(15,0,-70, 1000);
+  delay(200);
+  analogWrite(servoPins[1], radToSteps(0, 1));
+  analogWrite(servoPins[4], radToSteps(0, 4));
+  delay(200);
+  for(int r=0;r<3;r++){
+    for(double i=0;i<PI/2;i+=PI/25){
+      analogWrite(servoPins[2], radToSteps(i, 2));
+      analogWrite(servoPins[5], radToSteps(i, 5));
+      delay(50);
     }
-  } else {
-    for(int i=currentAnglePitch; i < n_pitch; i+= ((n_pitch - currentAnglePitch) / 10) ){
-      angleBase(i, 0, n_mid_height);
-      delay(n_time / 10);
+    for(double i=PI/2;i>0;i-=PI/25){
+      analogWrite(servoPins[2], radToSteps(i, 2));
+      analogWrite(servoPins[5], radToSteps(i, 5));
+      delay(50);
     }
   }
+  delay(200);
+  moveLegToPos(tempX[0],tempY[0],tempZ[0],0);
+  moveLegToPos(tempX[1],tempY[1],tempZ[1],1);
+  delay(50);
+  angleBaseOverTime(0,0,-70, 500);
+}
+
+void angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, double n_time){
+  double temp_pitch = currentAnglePitch;
+  double temp_roll = currentAngleRoll;
+  double pitch_c = temp_pitch;
+  double roll_c = temp_roll;
+  double res = 100.0;
+
+  double pitch_step = -(temp_pitch-n_pitch) / res;
+  double roll_step = -(temp_roll-n_roll) / res;
+
+  for(int i=0;i<res;i++){
+    angleBase(pitch_c,roll_c,n_mid_height);
+    roll_c+=roll_step;
+    pitch_c+=pitch_step;
+    delay(n_time/res);
+  }
+/*
+  if(temp_pitch > n_pitch){
+    for(double i=temp_pitch; i > n_pitch; i-= ((temp_pitch - n_pitch) / res) ){
+      angleBase(i, roll_c, n_mid_height);
+      delay(n_time / res);
+    }
+  } else {
+    for(double i=temp_pitch; i < n_pitch; i+= ((n_pitch - temp_pitch) / res) ){
+      angleBase(i, roll_c, n_mid_height);
+      delay(n_time / res);
+    }
+  }*/
 }
 
 /*  angleBase(double n_angle, double n_mid_height)
@@ -69,9 +121,6 @@ void angleBase(double n_pitch, double n_roll, double n_mid_height){
   double z_roll_mid = sin(n_roll_rad) * d_roll_mid;
   double z_roll_out = sin(n_roll_rad) * d_roll_out;
   
-
-  
-//  Serial.println(z);
   moveLegZTo(n_mid_height - z_pitch - z_roll_out,0);
   moveLegZTo(n_mid_height - z_pitch + z_roll_out,1);
   moveLegZTo(n_mid_height - z_roll_mid ,2);

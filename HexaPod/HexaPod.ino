@@ -24,6 +24,9 @@ int top_interval[6] = {665,595,623,700,665,635};
 String incString;
 
 void setup(){
+  currentAnglePitch = 0.0;
+  currentAngleRoll = 0.0;
+
   for(int i=0;i<6;i++){
     currentX[i] = c_nul_x;
     currentY[i] = c_nul_y;
@@ -42,11 +45,6 @@ void setup(){
   Serial.println("Servos initialized!");
 
   robotStand();
-
-  for(int i=0;i<10;i++){
-    angleBase(i,0,-70);
-    delay(50);
-  }
 }
 
 void loop(){
@@ -71,31 +69,25 @@ void loop(){
  * n_stride - length of each step on each leg, lower stride means slower movement
  * n_delay - delay between individual motions, lower delay means faster walking
  */
-  for(double i=0; i<10;i+=0.5){
-    angleBase(currentAnglePitch, i, -70);
-    delay(middle);
-  }
-  for(double i=10; i>-10;i-=0.5){
-    angleBase(i, currentAngleRoll, -70);
-    delay(middle);
-  }
-  for(double i=10; i>-10;i-=0.5){
-    angleBase(currentAnglePitch, i , -70);
-    delay(middle);
-  }
-  for(double i=-10;i<10;i+=0.5){
-    angleBase(i, currentAngleRoll, -70);
-    delay(middle);
-  }
-  for(double i=-10;i<0;i+=0.5){
-    angleBase(currentAnglePitch, i , -70);
-    delay(middle);
-  }
-  
-//  turnRobot("right", 40, 1000);
 
- /* moveAtAngle("robot", 0, 180, 40, 400);
-  delay(500);
-  */
+robotStand();
+delay(5000);
+/*
+angleBaseOverTime(15,0,-70,1000);
+angleBaseOverTime(0,0,-70,1000);
+*/
+gesture_wave();
+delay(1000000);
+
+/*
+for(int i=0;i<5;i++){
+  moveAtAngle("robot", 0, 180, 20, 400);
+}
+robotStand();
+*/
+while(true){
+  delay(1000);
+}
+  
   
 }
