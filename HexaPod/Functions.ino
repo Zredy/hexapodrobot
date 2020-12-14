@@ -1,7 +1,35 @@
 #include <math.h>
 
-double previous_pitch = 0.0;
-double previous_roll = 0.0;
+/* !IMPORTANT!
+ * DEFAULT VARIABLE DEFINITIONS
+ * CHANGE ONLY IF YOU KNOW WHAT YOU ARE DOING
+ * RANDOMLY CHANGING THESE VALUES COULD BREAK THE FUNCTIONALITY OF THE ROBOT
+ */
+
+const int numServo = 18;
+int servoPins[numServo] = {2,3,4,5,6,7,8,9,10,14,29,30,20,21,22,35,36,37};
+double currentX[6];
+double currentY[6];
+double currentZ[6];
+double currentAnglePitch = 0.0;
+double currentAngleRoll = 0.0;
+
+int c_nul_x = 0;
+int c_nul_y = 50;
+int c_nul_z = -50;
+
+int middle = 5;
+int currentServoNum;
+
+int min_interval = 595;
+int max_interval = 3138;
+int bottom_interval[6] = {1870,1800,1835,2000,1790,1870};
+int middle_interval[6] = {560,650,595,600,590,550};
+int top_interval[6] = {665,595,623,700,665,635};
+
+String incString;
+
+//PREDEFINED FUNCTIONS BELOW
 
 /* moveLegZTo(double z, int legNum)
  * Raises the specified leg to a height
@@ -39,6 +67,10 @@ struct Point{
   double y;
 };
 
+/*  gesture_wave()
+ *  Makes the robot do a wave
+ */
+
 void gesture_wave(){
   double tempX[6];
   double tempY[6];
@@ -72,6 +104,14 @@ void gesture_wave(){
   angleBaseOverTime(0,0,-70, 500);
 }
 
+/*  angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, double n_time)
+ *  Move base to desired angle over a set period of time(ms)
+ *  n_pitch - Desired pitch angle in degrees
+ *  n_roll - Desired roll angle in degrees
+ *  n_mid_height - Specifies the height of the robot in the middle
+ *  n_time - Specifies the desired time to do the action(ms)
+ */
+
 void angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, double n_time){
   double temp_pitch = currentAnglePitch;
   double temp_roll = currentAngleRoll;
@@ -88,18 +128,6 @@ void angleBaseOverTime(double n_pitch, double n_roll, double n_mid_height, doubl
     pitch_c+=pitch_step;
     delay(n_time/res);
   }
-/*
-  if(temp_pitch > n_pitch){
-    for(double i=temp_pitch; i > n_pitch; i-= ((temp_pitch - n_pitch) / res) ){
-      angleBase(i, roll_c, n_mid_height);
-      delay(n_time / res);
-    }
-  } else {
-    for(double i=temp_pitch; i < n_pitch; i+= ((n_pitch - temp_pitch) / res) ){
-      angleBase(i, roll_c, n_mid_height);
-      delay(n_time / res);
-    }
-  }*/
 }
 
 /*  angleBase(double n_angle, double n_mid_height)
@@ -137,7 +165,6 @@ void angleBase(double n_pitch, double n_roll, double n_mid_height){
  */
 
 void turnRobot(String side, double n_stride, int n_delay){
-  //side - left or right
   if(side == "left"){
     struct Point start_point;
     start_point = getLineStartPoint(0, n_stride);
@@ -323,4 +350,28 @@ struct Point getLineStartPoint(double n_angle, double n_stride){
   t_point.x = cos(radian) * (n_stride/2);
   t_point.y = sin(radian) * (n_stride/2);
   return t_point;
+}
+
+void initializeRobot(){
+  currentAnglePitch = 0.0;
+  currentAngleRoll = 0.0;
+
+  for(int i=0;i<6;i++){
+    currentX[i] = c_nul_x;
+    currentY[i] = c_nul_y;
+    currentZ[i] = c_nul_z;
+  }
+  
+  analogWriteResolution(12);
+  for(int i=0;i<numServo;i++){
+    pinMode(servoPins[i], OUTPUT);
+    analogWriteFrequency(servoPins[i], 300);
+  }
+  
+  Serial.begin(9600);
+  Serial.println("Starting serial link.");
+ 
+  Serial.println("Servos initialized!");
+
+  robotStand();
 }
