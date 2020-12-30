@@ -27,6 +27,6 @@ Hardware
 ----
 
 TODO
-- Add ability for robot to turn
-- Add ablity for robot to tilt backward/forward on only 4 legs, use the 2 free legs for "gestures"
-- Add ability for the robot base to tilt(should be able to implement with the previous)
+- Add ability for robot to turn - DONE but not final
+- Add ablity for robot to tilt backward/forward on only 4 legs, use the 2 free legs for "gestures" - DONE
+- Add ability for the robot base to tilt(should be able to implement with the previous) - DONE(tilting in two axes)
