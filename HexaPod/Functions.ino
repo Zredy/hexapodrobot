@@ -53,12 +53,12 @@ void robotStand(){
 
 /* robotToZ(double z)
  * Raise the whole robot to set z level
- * z - specifies z level
+ * z - specifies z level(in positive scale)
  */
 
 void robotToZ(double z){
   for(int i=0;i<6;i++){
-    moveLegToPos(currentX[i],currentY[i],z,i);
+    moveLegToPos(currentX[i],currentY[i],-z,i);
   }
 }
 
@@ -149,12 +149,12 @@ void angleBase(double n_pitch, double n_roll, double n_mid_height){
   double z_roll_mid = sin(n_roll_rad) * d_roll_mid;
   double z_roll_out = sin(n_roll_rad) * d_roll_out;
   
-  moveLegZTo(n_mid_height - z_pitch - z_roll_out,0);
-  moveLegZTo(n_mid_height - z_pitch + z_roll_out,1);
-  moveLegZTo(n_mid_height - z_roll_mid ,2);
-  moveLegZTo(n_mid_height + z_roll_mid ,3);
-  moveLegZTo(n_mid_height + z_pitch - z_roll_out ,4);
-  moveLegZTo(n_mid_height + z_pitch + z_roll_out,5);
+  moveLegZTo(n_mid_height + z_pitch + z_roll_out,0);
+  moveLegZTo(n_mid_height + z_pitch - z_roll_out,1);
+  moveLegZTo(n_mid_height + z_roll_mid ,2);
+  moveLegZTo(n_mid_height - z_roll_mid ,3);
+  moveLegZTo(n_mid_height - z_pitch + z_roll_out ,4);
+  moveLegZTo(n_mid_height - z_pitch - z_roll_out,5);
 }
 
 /* turnRobot(String side, double n_stride, int n_delay)
